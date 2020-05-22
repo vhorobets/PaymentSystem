@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+option csharp_namespace = "PaymentGateway.Services";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+/****** Service Definition *****/
+service PaymentGatewayService {
+    rpc CreatePayment (PaymentRequest) returns (PaymentResponse);
+    rpc GetPaymentStream (stream PaymentRequest) returns (StreamResponse);
+    rpc GetTransaction (TransactionRequest) returns (TransactionResponse);
+}
+
+/****** Payment Request/Response Messages *****/
+
+message PaymentRequest {
+    Merchant merchant = 1;
+    TransactionType transactionType = 2;
+    double amount = 3;
+    CurrencyType currencyType = 4;
+    string source = 5;
+}
+
+message Merchant {
+    string merchantName = 1;
+    string transactionKey = 2;
+}
+
+enum TransactionType {
+    INVALID = 0;
+    PAYMENT = 1;
+    REFUND = 2;
+}
+
+enum CurrencyType {
+    USD = 0;
+    CAD = 1;
+    GBP = 2;
+    EUR = 3;
+}
+
+message PaymentResponse {
+    string message = 1;
+    ResponseStatus responseStatus = 2;
+    google.protobuf.Timestamp receivingTime = 3;
+    int32 transactionId = 4;
+}
+
+enum ResponseStatus {
+    FAILED = 0;
+    SUCCESSFUL = 1;
+}
+
+message StreamResponse {
+    int32 Count = 1;
+    int32 SuccessfulCount = 2;
+    int32 FailedCount = 3;
+}
+
+/****** Transaction Reporting Messages *****/
+
+message TransactionRequest {
+    int32 transactionId = 1;
+}
+
+message TransactionResponse {
+    int32 transactionId = 1;
+    TransactionStatus transactionStatus = 2;
+    double transactionAmount = 3;
+
+    enum TransactionStatus {
+        NOT_FOUND = 0;
+        NOTPROCESSED = 1;
+        APPROVED = 2;
+        DECLINED = 3;
+    }
+}
